@@ -1,0 +1,42 @@
+[
+  {
+    "id": "OBL-001",
+    "source_doc": "Ley General de Títulos y Operaciones de Crédito",
+    "rule_type": "Obligation",
+    "condition_variable": "max_interest_rate",
+    "threshold_value": 48,
+    "description": "La tasa de interés ordinaria no podrá exceder el 48% anual"
+  },
+  {
+    "id": "OBL-002",
+    "source_doc": "Ley para Regular las Instituciones de Tecnología Financiera",
+    "rule_type": "Obligation",
+    "condition_variable": "kyc_threshold",
+    "threshold_value": 50000,
+    "description": "Verificación de identidad obligatoria para operaciones superiores a 50,000 UDIS"
+  },
+  {
+    "id": "PRO-001",
+    "source_doc": "Ley Federal para la Prevención e Identificación de Operaciones con Recursos de Procedencia Ilícita",
+    "rule_type": "Prohibition",
+    "condition_variable": "anonymous_operations",
+    "threshold_value": 1,
+    "description": "Queda prohibida la realización de operaciones con recursos de procedencia ilícita"
+  },
+  {
+    "id": "PRO-002",
+    "source_doc": "Ley de Protección al Consumidor Financiero",
+    "rule_type": "Prohibition",
+    "condition_variable": "hidden_commissions",
+    "threshold_value": 1,
+    "description": "No podrán aplicarse comisiones no informadas previamente al consumidor"
+  },
+  {
+    "id": "PER-001",
+    "source_doc": "Ley Fintech",
+    "rule_type": "Permission",
+    "condition_variable": "crowdfunding_limit",
+    "threshold_value": 2000000,
+    "description": "Las ITF podrán realizar financiamiento colectivo hasta por 2,000,000 de UDIS por proyecto"
+  }
+]

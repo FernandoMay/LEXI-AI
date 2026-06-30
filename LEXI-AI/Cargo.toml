@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "core",
+    "contracts/lexi_compliance",
+]
+resolver = "2"
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+lto = true
+debug = false
+codegen-units = 1
