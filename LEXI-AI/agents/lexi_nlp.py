@@ -13,7 +13,7 @@ LEGAL_PATTERNS = {
         r"(?:no deberá|no estará permitido|no será posible)\s+([^,.\n]+)",
     ],
     "permission": [
-        r"(?:podrá|se permite|está permitido|tiene derecho a|puede)\s+([^,.\n]+(?:\d+[\d,]*\s*\w+)?)",
+        r"(?<!no )(?:podr[áa]n?|se permite|est[áa] permitido|tiene derecho a|pueden?)\s+([^,.\n]+(?:\d+[\d,]*\s*\w+)?)",
         r"(?:es facultad de|tiene la facultad de|queda facultado)\s+([^,.\n]+)",
     ],
 }
@@ -27,6 +27,14 @@ RULE_TYPE_MAP = {
 
 def extract_numbers(text: str):
     return [int(s.replace(",", "")) for s in re.findall(r"\b\d[\d,]*\b", text)]
+
+
+def extract_full_sentences(text: str, phrase: str) -> str:
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    for sent in sentences:
+        if phrase in sent or phrase[:20] in sent:
+            return sent.strip()[:200]
+    return phrase[:120]
 
 
 def extract_legal_axioms(text_path: str):
@@ -55,7 +63,7 @@ def extract_legal_axioms(text_path: str):
                     "rule_type": rule_type,
                     "condition_variable": var_name,
                     "threshold_value": threshold,
-                    "description": phrase[:120],
+                    "description": extract_full_sentences(text, phrase),
                 })
 
     return json.dumps(axioms, indent=4, ensure_ascii=False)
