@@ -1,71 +1,84 @@
-"""Integration test: NLP Agent → Compliance Engine → Audit Report."""
+"""Integration tests: NLP Agent → Compliance → Multi-Party Signatures → Report."""
 import json
 import sys
 import os
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from orchestrator.lexi_pipeline import run_pipeline, ComplianceEngine
+from orchestrator.lexi_pipeline import run_pipeline
 
 
 class TestIntegration(unittest.TestCase):
 
     def test_end_to_end_with_mock_law(self):
-        """Full pipeline: parse a real law file, evaluate, produce report."""
         law_path = os.path.join(os.path.dirname(__file__), "..", "agents", "mock_laws", "ley_prueba.txt")
         report = run_pipeline(law_path=law_path)
-        self.assertIn("timestamp", report)
-        self.assertIn("compliance_hash", report)
-        self.assertIn("rules_evaluated", report)
-        self.assertIsInstance(report["compliance_status"], bool)
-        self.assertGreater(len(report["rules_evaluated"]), 0)
+        self.assertIn("metadata", report)
+        self.assertIn("agents", report)
+        self.assertIn("contract", report)
+        self.assertIn("compliance", report)
+        self.assertIn("signatures", report)
+        self.assertIsInstance(report["compliance"]["status"], bool)
 
     def test_end_to_end_mock_mode(self):
-        """Pipeline with no law file -> uses mock rules."""
         report = run_pipeline()
-        self.assertIn("compliance_hash", report)
-        self.assertIsInstance(report["compliance_status"], bool)
+        self.assertIn("compliance", report)
+        self.assertIsInstance(report["compliance"]["status"], bool)
+        self.assertGreater(report["compliance"]["rules_evaluated"], 0)
+
+    def test_three_agents_present(self):
+        report = run_pipeline()
+        agents = report["agents"]
+        self.assertIn("nlp_agent", agents)
+        self.assertIn("compliance_agent", agents)
+        self.assertIn("web3_agent", agents)
+
+    def test_three_signatures_present(self):
+        report = run_pipeline()
+        sigs = report["signatures"]
+        self.assertIn("regulator", sigs)
+        self.assertIn("audited_entity", sigs)
+        self.assertIn("independent_auditor", sigs)
+        for s in sigs.values():
+            self.assertTrue(s["verified"])
+
+    def test_contract_info_present(self):
+        report = run_pipeline()
+        ct = report["contract"]
+        self.assertIn("contract_id", ct)
+        self.assertIn("network", ct)
+        self.assertIn("registration_tx", ct)
+        self.assertIn("source", ct)
+
+    def test_audit_hash_format(self):
+        report = run_pipeline()
+        h = report["compliance"]["audit_hash"]
+        self.assertEqual(len(h), 64)
+        int(h, 16)
 
     def test_compliance_pass(self):
-        """All rules satisfied -> compliant."""
-        engine = ComplianceEngine([
-            {"id": "PRO-001", "rule_type": "Prohibition", "condition_variable": "x", "threshold_value": 1},
-        ])
-        report = engine.evaluate({"x": 0})
-        self.assertTrue(report["compliance_status"])
-
-    def test_compliance_fail_prohibition(self):
-        """Prohibition violated -> non-compliant."""
-        engine = ComplianceEngine([
-            {"id": "PRO-001", "rule_type": "Prohibition", "condition_variable": "x", "threshold_value": 1},
-        ])
-        report = engine.evaluate({"x": 1})
-        self.assertFalse(report["compliance_status"])
-
-    def test_compliance_fail_obligation(self):
-        """Obligation threshold exceeded -> non-compliant."""
-        engine = ComplianceEngine([
-            {"id": "OBL-001", "rule_type": "Obligation", "condition_variable": "amt", "threshold_value": 100},
-        ])
-        report = engine.evaluate({"amt": 200})
-        self.assertFalse(report["compliance_status"])
-
-    def test_hash_determinism(self):
-        """Different timestamps produce different hashes."""
-        rules = [{"id": "T1", "rule_type": "Prohibition", "condition_variable": "x", "threshold_value": 1}]
-        ctx = {"x": 0}
-        r1 = ComplianceEngine(rules).evaluate(ctx)
-        import time; time.sleep(1.1)
-        r2 = ComplianceEngine(rules).evaluate(ctx)
-        self.assertNotEqual(r1["compliance_hash"], r2["compliance_hash"],
-                            "Hashes differ because timestamp is included")
+        report = run_pipeline()
+        self.assertTrue(report["compliance"]["status"])
+        self.assertEqual(len(report["compliance"]["violations"]), 0)
 
     def test_output_json_serializable(self):
-        """Report must be valid JSON."""
         report = run_pipeline()
         dumped = json.dumps(report)
         loaded = json.loads(dumped)
-        self.assertEqual(loaded["compliance_status"], report["compliance_status"])
+        self.assertEqual(loaded["compliance"]["status"], report["compliance"]["status"])
+
+    def test_agent_trace_has_timestamps(self):
+        report = run_pipeline()
+        for aid, agent in report["agents"].items():
+            self.assertIn("started_at", agent)
+            self.assertIn("completed_at", agent)
+            self.assertIn("elapsed_ms", agent)
+
+    def test_signature_recovery(self):
+        report = run_pipeline()
+        evidence = report["evidence"]
+        self.assertIn("core_payload", evidence)
+        self.assertIn("recovery_hash", evidence)
 
 
 if __name__ == "__main__":

@@ -6,15 +6,16 @@ void main() {
   testWidgets('LEXI AI dashboard renders', (WidgetTester tester) async {
     await tester.pumpWidget(const LexiAiApp());
     expect(find.text('LEXI AI // Intelligent Legal Network'), findsOneWidget);
-    expect(find.text('EXECUTE COGNITIVE PIPELINE'), findsOneWidget);
-    expect(find.text('Legal Document Ingest'), findsOneWidget);
-    expect(find.text('Immutable Audit Monitor'), findsOneWidget);
+    expect(find.text('INITIALIZE PIPELINE'), findsOneWidget);
+    expect(find.text('LEXI AI'), findsOneWidget);
   });
 
-  testWidgets('Pipeline execution updates UI', (WidgetTester tester) async {
+  testWidgets('Pipeline execution shows tabs', (WidgetTester tester) async {
     await tester.pumpWidget(const LexiAiApp());
-    await tester.tap(find.text('EXECUTE COGNITIVE PIPELINE'));
+    await tester.tap(find.text('INITIALIZE PIPELINE'));
     await tester.pumpAndSettle(const Duration(seconds: 3));
-    expect(find.text('COMPLIANT - ALL RULES VALIDATED'), findsOneWidget);
+    expect(find.text('Compliance Verdict'), findsOneWidget);
+    expect(find.text('SHA-256 HASH'), findsOneWidget);
+    expect(find.text('Audit Trail'), findsOneWidget);
   });
 }
