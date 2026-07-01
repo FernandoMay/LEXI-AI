@@ -4,63 +4,169 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
-// ── Design System Tokens (LexGuardian) ───────────────────────────────────────
-const _surfaceDim = Color(0xFF031427);
-const _surfaceContainer = Color(0xFF102034);
-const _surfaceContainerLow = Color(0xFF0B1C30);
-const _surfaceContainerHigh = Color(0xFF1B2B3F);
-const _surfaceContainerHighest = Color(0xFF26364A);
-const _surfaceBright = Color(0xFF2A3A4F);
-const _surfaceDeep = Color(0xFF0B0B13);
-const _surfaceDocument = Color(0xFF262B3C);
-const _glassBg = Color(0xFF1E222F);
-const _onSurface = Color(0xFFD3E4FE);
-const _onSurfaceVariant = Color(0xFFC3C6D7);
-const _primary = Color(0xFFB4C5FF);
-const _primaryContainer = Color(0xFF2563EB);
-const _outline = Color(0xFF8D90A0);
-const _outlineVariant = Color(0xFF434655);
-const _success = Color(0xFF10B981);
-const _warning = Color(0xFFF59E0B);
-const _alert = Color(0xFFEF4444);
+// ── Design System Colors (Dark Palette) ──────────────────────────────────────
+const _darkSurfaceDim = Color(0xFF031427);
+const _darkSurfaceContainer = Color(0xFF102034);
+const _darkSurfaceContainerLow = Color(0xFF0B1C30);
+const _darkSurfaceContainerHigh = Color(0xFF1B2B3F);
+const _darkSurfaceContainerHighest = Color(0xFF26364A);
+const _darkSurfaceBright = Color(0xFF2A3A4F);
+const _darkSurfaceDeep = Color(0xFF0B0B13);
+const _darkSurfaceDocument = Color(0xFF262B3C);
+const _darkGlassBg = Color(0xFF1E222F);
+const _darkOnSurface = Color(0xFFD3E4FE);
+const _darkOnSurfaceVariant = Color(0xFFC3C6D7);
+const _darkPrimary = Color(0xFFB4C5FF);
+const _darkPrimaryContainer = Color(0xFF2563EB);
+const _darkOutline = Color(0xFF8D90A0);
+const _darkOutlineVariant = Color(0xFF434655);
+const _darkSuccess = Color(0xFF10B981);
+const _darkWarning = Color(0xFFF59E0B);
+const _darkAlert = Color(0xFFEF4444);
 
+// ── Design System Colors (Light Palette) ─────────────────────────────────────
+const _lightSurfaceDim = Color(0xFFF5F7FA);
+const _lightSurfaceContainer = Color(0xFFF0F2F5);
+const _lightSurfaceContainerLow = Color(0xFFFFFFFF);
+const _lightSurfaceContainerHigh = Color(0xFFE8ECF0);
+const _lightSurfaceContainerHighest = Color(0xFFE0E5EA);
+const _lightSurfaceBright = Color(0xFFFFFFFF);
+const _lightSurfaceDeep = Color(0xFFEAEEF2);
+const _lightSurfaceDocument = Color(0xFFF0F4FF);
+const _lightGlassBg = Color(0xFFFFFFFF);
+const _lightOnSurface = Color(0xFF1A2332);
+const _lightOnSurfaceVariant = Color(0xFF5A6B7F);
+const _lightPrimary = Color(0xFF2563EB);
+const _lightPrimaryContainer = Color(0xFF2563EB);
+const _lightOutline = Color(0xFF96A5B8);
+const _lightOutlineVariant = Color(0xFFD0D5DD);
+const _lightSuccess = Color(0xFF10B981);
+const _lightWarning = Color(0xFFF59E0B);
+const _lightAlert = Color(0xFFEF4444);
+
+// ── Theme InheritedWidget ─────────────────────────────────────────────────────
+class LexiTheme extends InheritedWidget {
+  final bool isDark;
+  final VoidCallback onToggle;
+
+  const LexiTheme({
+    super.key,
+    required this.isDark,
+    required this.onToggle,
+    required super.child,
+  });
+
+  static LexiTheme of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<LexiTheme>()!;
+  }
+
+  @override
+  bool updateShouldNotify(LexiTheme old) => old.isDark != isDark;
+
+  // Color accessors
+  Color get surfaceDim => isDark ? _darkSurfaceDim : _lightSurfaceDim;
+  Color get surfaceContainer => isDark ? _darkSurfaceContainer : _lightSurfaceContainer;
+  Color get surfaceContainerLow => isDark ? _darkSurfaceContainerLow : _lightSurfaceContainerLow;
+  Color get surfaceContainerHigh => isDark ? _darkSurfaceContainerHigh : _lightSurfaceContainerHigh;
+  Color get surfaceContainerHighest => isDark ? _darkSurfaceContainerHighest : _lightSurfaceContainerHighest;
+  Color get surfaceBright => isDark ? _darkSurfaceBright : _lightSurfaceBright;
+  Color get surfaceDeep => isDark ? _darkSurfaceDeep : _lightSurfaceDeep;
+  Color get surfaceDocument => isDark ? _darkSurfaceDocument : _lightSurfaceDocument;
+  Color get glassBg => isDark ? _darkGlassBg : _lightGlassBg;
+  Color get onSurface => isDark ? _darkOnSurface : _lightOnSurface;
+  Color get onSurfaceVariant => isDark ? _darkOnSurfaceVariant : _lightOnSurfaceVariant;
+  Color get primary => isDark ? _darkPrimary : _lightPrimary;
+  Color get primaryContainer => isDark ? _darkPrimaryContainer : _lightPrimaryContainer;
+  Color get outline => isDark ? _darkOutline : _lightOutline;
+  Color get outlineVariant => isDark ? _darkOutlineVariant : _lightOutlineVariant;
+  Color get success => isDark ? _darkSuccess : _lightSuccess;
+  Color get warning => isDark ? _darkWarning : _lightWarning;
+  Color get alert => isDark ? _darkAlert : _lightAlert;
+}
+
+// ── App Entry ─────────────────────────────────────────────────────────────────
 void main() => runApp(const LexiAiApp());
 
-class LexiAiApp extends StatelessWidget {
+class LexiAiApp extends StatefulWidget {
   const LexiAiApp({super.key});
+  @override
+  State<LexiAiApp> createState() => _LexiAiAppState();
+}
+
+class _LexiAiAppState extends State<LexiAiApp> {
+  ThemeMode _themeMode = ThemeMode.dark;
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'LEXI AI',
+      themeMode: _themeMode,
       theme: ThemeData(
-        scaffoldBackgroundColor: _surfaceDim,
-        colorScheme: const ColorScheme.dark(
-          primary: _primary,
-          secondary: _onSurfaceVariant,
-          surface: _surfaceContainer,
-          error: _alert,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: _lightSurfaceDim,
+        colorScheme: const ColorScheme.light(
+          primary: _lightPrimary,
+          secondary: _lightOnSurfaceVariant,
+          surface: _lightSurfaceContainer,
+          error: _lightAlert,
         ),
         fontFamily: 'sans-serif',
         appBarTheme: const AppBarTheme(
-          backgroundColor: _surfaceContainerHigh,
+          backgroundColor: _lightSurfaceContainerHigh,
           elevation: 0,
           centerTitle: true,
-          titleTextStyle: TextStyle(color: _onSurface, fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.3),
-          iconTheme: IconThemeData(color: _onSurfaceVariant),
+          titleTextStyle: TextStyle(color: _lightOnSurface, fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.3),
+          iconTheme: IconThemeData(color: _lightOnSurfaceVariant),
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: _surfaceDim,
-          selectedItemColor: _primary,
-          unselectedItemColor: _outline,
+          backgroundColor: _lightSurfaceDim,
+          selectedItemColor: _lightPrimary,
+          unselectedItemColor: _lightOutline,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
           selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
           unselectedLabelStyle: TextStyle(fontSize: 11),
         ),
       ),
-      home: const LexiHome(),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: _darkSurfaceDim,
+        colorScheme: const ColorScheme.dark(
+          primary: _darkPrimary,
+          secondary: _darkOnSurfaceVariant,
+          surface: _darkSurfaceContainer,
+          error: _darkAlert,
+        ),
+        fontFamily: 'sans-serif',
+        appBarTheme: const AppBarTheme(
+          backgroundColor: _darkSurfaceContainerHigh,
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(color: _darkOnSurface, fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.3),
+          iconTheme: IconThemeData(color: _darkOnSurfaceVariant),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: _darkSurfaceDim,
+          selectedItemColor: _darkPrimary,
+          unselectedItemColor: _darkOutline,
+          type: BottomNavigationBarType.fixed,
+          elevation: 0,
+          selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: TextStyle(fontSize: 11),
+        ),
+      ),
+      home: LexiTheme(
+        isDark: _themeMode != ThemeMode.light,
+        onToggle: _toggleTheme,
+        child: const LexiHome(),
+      ),
     );
   }
 }
@@ -126,6 +232,8 @@ class AuditReport {
   }
 }
 
+// ── Backend Service ──────────────────────────────────────────────────────────
+
 class LexiBackendService {
   static String _baseUrl = 'http://localhost:8000';
   static void setBaseUrl(String url) => _baseUrl = url;
@@ -179,6 +287,7 @@ class _LexiHomeState extends State<LexiHome> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = LexiTheme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -186,38 +295,43 @@ class _LexiHomeState extends State<LexiHome> {
           children: [
             Container(
               padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(color: _primaryContainer.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
-              child: const Icon(Icons.gavel, size: 18, color: _primaryContainer),
+              decoration: BoxDecoration(color: theme.primaryContainer.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
+              child: const Icon(Icons.gavel, size: 18, color: _darkPrimaryContainer),
             ),
             const SizedBox(width: 10),
             const Text('LEXI AI  •  LexGuardian Compliance'),
           ],
         ),
         actions: [
+          IconButton(
+            icon: Icon(theme.isDark ? Icons.light_mode : Icons.dark_mode, color: theme.onSurfaceVariant),
+            onPressed: theme.onToggle,
+            tooltip: theme.isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro',
+          ),
           if (_useBackend)
             Container(
               margin: const EdgeInsets.only(right: 4),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: _success.withOpacity(0.12),
+                color: theme.success.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: _success.withOpacity(0.3)),
+                border: Border.all(color: theme.success.withOpacity(0.3)),
               ),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Container(width: 6, height: 6, decoration: const BoxDecoration(color: _success, shape: BoxShape.circle)),
+                Container(width: 6, height: 6, decoration: BoxDecoration(color: theme.success, shape: BoxShape.circle)),
                 const SizedBox(width: 4),
-                const Text('EN VIVO', style: TextStyle(color: _success, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                Text('EN VIVO', style: TextStyle(color: theme.success, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
               ]),
             ),
           _processing
-              ? const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2, color: _primary))
+              ? const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2, color: _darkPrimary))
               : IconButton(
-                  icon: const Icon(Icons.play_circle_outline, color: _primaryContainer),
+                  icon: const Icon(Icons.play_circle_outline, color: _darkPrimaryContainer),
                   onPressed: _executePipeline,
                   tooltip: 'Ejecutar Auditoría',
                 ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.settings, color: _outline),
+            icon: Icon(Icons.settings, color: theme.outline),
             onSelected: (v) {
               if (v == 'mock') setState(() { _useBackend = false; _showNgrokInput = false; });
               else if (v == 'ngrok') setState(() => _showNgrokInput = true);
@@ -232,9 +346,9 @@ class _LexiHomeState extends State<LexiHome> {
           ),
         ],
       ),
-      body: _showNgrokInput ? _buildNgrokPanel()
-          : _processing ? const Center(child: CircularProgressIndicator(color: _primaryContainer))
-          : _report == null ? _buildEmptyState() : _buildTabContent(),
+      body: _showNgrokInput ? _buildNgrokPanel(theme)
+          : _processing ? const Center(child: CircularProgressIndicator(color: _darkPrimaryContainer))
+          : _report == null ? _buildEmptyState(theme) : _buildTabContent(theme),
       bottomNavigationBar: _report == null || _showNgrokInput ? null
           : BottomNavigationBar(
               currentIndex: _tabIndex,
@@ -244,7 +358,7 @@ class _LexiHomeState extends State<LexiHome> {
     );
   }
 
-  Widget _buildNgrokPanel() {
+  Widget _buildNgrokPanel(LexiTheme theme) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -252,11 +366,11 @@ class _LexiHomeState extends State<LexiHome> {
           _GlassCard(child: Padding(
             padding: const EdgeInsets.all(32),
             child: Column(children: [
-              const Icon(Icons.wifi_tethering, size: 48, color: _primaryContainer),
+              Icon(Icons.wifi_tethering, size: 48, color: theme.primaryContainer),
               const SizedBox(height: 16),
-              const Text('Conexión por Túnel Seguro', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _onSurface)),
+              Text('Conexión por Túnel Seguro', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: theme.onSurface)),
               const SizedBox(height: 8),
-              const Text('Ingresa la URL HTTPS de ngrok para conectar\ncon el servidor de auditoría en vivo.', textAlign: TextAlign.center, style: TextStyle(color: _onSurfaceVariant, height: 1.4)),
+              Text('Ingresa la URL HTTPS de ngrok para conectar\ncon el servidor de auditoría en vivo.', textAlign: TextAlign.center, style: TextStyle(color: theme.onSurfaceVariant, height: 1.4)),
               const SizedBox(height: 16),
               _StyledField(controller: _ngrokController, hint: 'https://tu-tunel.ngrok.io'),
               const SizedBox(height: 16),
@@ -277,26 +391,26 @@ class _LexiHomeState extends State<LexiHome> {
     }
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(LexiTheme theme) {
     return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Container(
           padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(color: _primaryContainer.withOpacity(0.1), shape: BoxShape.circle),
-          child: const Icon(Icons.gavel, size: 48, color: _primaryContainer),
+          decoration: BoxDecoration(color: theme.primaryContainer.withOpacity(0.1), shape: BoxShape.circle),
+          child: const Icon(Icons.gavel, size: 48, color: _darkPrimaryContainer),
         ),
         const SizedBox(height: 20),
-        const Text('LEXI AI — LexGuardian Compliance', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: _onSurface, letterSpacing: 0.3)),
+        Text('LEXI AI — LexGuardian Compliance', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: theme.onSurface, letterSpacing: 0.3)),
         const SizedBox(height: 8),
         Text('Red de Cumplimiento Inteligente y Contratos Legales\nAuditoría Asistida por IA  •  Blockchain Soroban',
-            textAlign: TextAlign.center, style: const TextStyle(color: _onSurfaceVariant, height: 1.4, fontSize: 14)),
+            textAlign: TextAlign.center, style: TextStyle(color: theme.onSurfaceVariant, height: 1.4, fontSize: 14)),
         const SizedBox(height: 28),
         _PrimaryButton(label: 'INICIAR AUDITORÍA', icon: Icons.play_arrow, onPressed: _executePipeline),
       ]),
     );
   }
 
-  Widget _buildTabContent() {
+  Widget _buildTabContent(LexiTheme theme) {
     switch (_tabIndex) {
       case 0: return _DashboardTab(report: _report!, useBackend: _useBackend, onRerun: _executePipeline);
       case 1: return _AgentsTab(report: _report!);
@@ -319,6 +433,7 @@ class _DashboardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = LexiTheme.of(context);
     final c = report.compliance;
     final status = c['status'] as bool? ?? false;
     final hash = c['audit_hash'] as String? ?? '';
@@ -334,9 +449,7 @@ class _DashboardTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
       children: [
-        // ── Hero: Command Center ──
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // Bento status card
           Expanded(flex: 7, child: _GlassCard(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -344,40 +457,38 @@ class _DashboardTab extends StatelessWidget {
                 Row(children: [
                   Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: _primaryContainer.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.dashboard, size: 20, color: _primaryContainer),
+                    decoration: BoxDecoration(color: theme.primaryContainer.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.dashboard, size: 20, color: _darkPrimaryContainer),
                   ),
                   const SizedBox(width: 12),
                   Flexible(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('Command Center', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _onSurface)),
-                    Text('${meta['regulated_entity'] ?? '—'}  |  ${meta['audit_period'] ?? '—'}', style: const TextStyle(color: _onSurfaceVariant, fontSize: 12), overflow: TextOverflow.ellipsis),
+                    Text('Command Center', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: theme.onSurface)),
+                    Text('${meta['regulated_entity'] ?? '—'}  |  ${meta['audit_period'] ?? '—'}', style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12), overflow: TextOverflow.ellipsis),
                   ])),
                 ]),
                 const SizedBox(height: 20),
-                // Status tiles in a responsive row that wraps
                 LayoutBuilder(builder: (ctx, constraints) {
                   final tileWidth = (constraints.maxWidth - 16) / 3;
                   return Row(children: [
-                    SizedBox(width: tileWidth, child: _statusTile('Motor NLP', 'Activo (v4.1)', _success, Icons.auto_awesome)),
+                    SizedBox(width: tileWidth, child: _statusTile(context, 'Motor NLP', 'Activo (v4.1)', theme.success, Icons.auto_awesome)),
                     const SizedBox(width: 8),
-                    SizedBox(width: tileWidth, child: _statusTile('Soroban Sync', 'Sincronizado', _primary, Icons.sync)),
+                    SizedBox(width: tileWidth, child: _statusTile(context, 'Soroban Sync', 'Sincronizado', theme.primary, Icons.sync)),
                     const SizedBox(width: 8),
-                    SizedBox(width: tileWidth, child: _statusTile('Inmutabilidad', '99.9%', _warning, Icons.verified_user)),
+                    SizedBox(width: tileWidth, child: _statusTile(context, 'Inmutabilidad', '99.9%', theme.warning, Icons.verified_user)),
                   ]);
                 }),
               ]),
             ),
           )),
           const SizedBox(width: 20),
-          // Certificate CTA
           Expanded(flex: 5, child: _GlassCard(
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Cumplimiento', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _onSurface)),
+                Text('Cumplimiento', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: theme.onSurface)),
                 const SizedBox(height: 4),
-                const Text('Valide la integridad de todos los expedientes procesados en el ciclo actual.',
-                    style: TextStyle(color: _onSurfaceVariant, fontSize: 12)),
+                Text('Valide la integridad de todos los expedientes procesados en el ciclo actual.',
+                    style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12)),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
@@ -393,24 +504,22 @@ class _DashboardTab extends StatelessWidget {
         ]),
         const SizedBox(height: 24),
 
-        // ── Pipeline Visualizer ──
-        _sectionHeader('Pipeline de Procesamiento'),
+        _sectionHeader(context, 'Pipeline de Procesamiento'),
         const SizedBox(height: 8),
         _GlassCard(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              _pipelineStep('IA (NLP)', 'Extracción', Icons.psychology, _primary, true),
-              _pipelineStep('Compliance', 'Validación', Icons.balance, _warning, true),
-              _pipelineStep('Blockchain', 'Inmutabilidad', Icons.verified, _success, true),
-              _pipelineStep('Resguardo', 'Archivado', Icons.inventory_2, _outline, false),
+              _pipelineStep(context, 'IA (NLP)', 'Extracción', Icons.psychology, theme.primary, true),
+              _pipelineStep(context, 'Compliance', 'Validación', Icons.balance, theme.warning, true),
+              _pipelineStep(context, 'Blockchain', 'Inmutabilidad', Icons.verified, theme.success, true),
+              _pipelineStep(context, 'Resguardo', 'Archivado', Icons.inventory_2, theme.outline, false),
             ]),
           ),
         ),
         const SizedBox(height: 24),
 
-        // ── Verdict ──
-        _sectionHeader('Dictamen de Cumplimiento'),
+        _sectionHeader(context, 'Dictamen de Cumplimiento'),
         const SizedBox(height: 8),
         _GlassCard(
           child: Padding(
@@ -419,66 +528,63 @@ class _DashboardTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: (status ? _success : _alert).withOpacity(0.1),
+                  color: (status ? theme.success : theme.alert).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(status ? Icons.verified : Icons.warning_amber_rounded, size: 28, color: status ? _success : _alert),
+                child: Icon(status ? Icons.verified : Icons.warning_amber_rounded, size: 28, color: status ? theme.success : theme.alert),
               ),
               const SizedBox(width: 16),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(status ? 'CUMPLIMIENTO TOTAL' : 'INCUMPLIMIENTO DETECTADO',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: status ? _success : _alert, letterSpacing: 0.3)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: status ? theme.success : theme.alert, letterSpacing: 0.3)),
                 const SizedBox(height: 4),
                 Text('$rulesCount reglas evaluadas  •  $compliantCount cumplidas  •  ${violations.length} violaciones',
-                    style: const TextStyle(color: _onSurfaceVariant, fontSize: 12)),
+                    style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12)),
               ])),
             ]),
           ),
         ),
         const SizedBox(height: 24),
 
-        // ── Traffic Light Cards ──
-        _sectionHeader('Semáforo Legal — Reglas Evaluadas'),
+        _sectionHeader(context, 'Semáforo Legal — Reglas Evaluadas'),
         const SizedBox(height: 8),
         if (rules.isEmpty)
-          _GlassCard(child: const Padding(padding: EdgeInsets.all(16), child: Text('No se evaluaron reglas.', style: TextStyle(color: _onSurfaceVariant))))
+          _GlassCard(child: Padding(padding: const EdgeInsets.all(16), child: Text('No se evaluaron reglas.', style: TextStyle(color: theme.onSurfaceVariant))))
         else
           ...rules.map((r) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: _ruleCard(r),
+            child: _ruleCard(context, r),
           )),
         const SizedBox(height: 24),
 
-        // ── Context + Hashes ──
-        _sectionHeader('Contexto de la Operación'),
+        _sectionHeader(context, 'Contexto de la Operación'),
         const SizedBox(height: 8),
         ...ctx.entries.map((e) => Padding(
           padding: const EdgeInsets.only(bottom: 4),
-          child: _infoRow(_ctxLabel(e.key), '${e.value}', _outline),
+          child: _infoRow(context, _ctxLabel(e.key), '${e.value}', theme.outline),
         )),
         const SizedBox(height: 20),
 
-        _sectionHeader('Cadena de Auditoría'),
+        _sectionHeader(context, 'Cadena de Auditoría'),
         const SizedBox(height: 8),
-        _hashCard('Hash de Auditoría SHA-256', hash, _primary, context: context),
+        _hashCard('Hash de Auditoría SHA-256', hash, theme.primary, context: context),
         const SizedBox(height: 6),
-        _hashCard('Hash del Árbol Sintáctico (AST)', ast, const Color(0xFF8B5CF6), context: context),
+        _hashCard('Hash del Árbol Sintáctico (AST)', ast, theme.primaryContainer, context: context),
         const SizedBox(height: 6),
-        _infoRow('Reglas Evaluadas', '$rulesCount', _outline),
+        _infoRow(context, 'Reglas Evaluadas', '$rulesCount', theme.outline),
         const SizedBox(height: 6),
-        _infoRow('Marco Regulatorio', meta['regulatory_framework'] as String? ?? '—', _outline),
+        _infoRow(context, 'Marco Regulatorio', meta['regulatory_framework'] as String? ?? '—', theme.outline),
         const SizedBox(height: 6),
-        _infoRow('Fuente', useBackend ? 'Servidor en Vivo' : 'Simulación Local', useBackend ? _success : _warning),
+        _infoRow(context, 'Fuente', useBackend ? 'Servidor en Vivo' : 'Simulación Local', useBackend ? theme.success : theme.warning),
         const SizedBox(height: 20),
 
-        // ── Re-run ──
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: onRerun,
             icon: const Icon(Icons.refresh),
             label: const Text('RE-EJECUTAR AUDITORÍA'),
-            style: _outlinedBtnStyle,
+            style: _outlinedBtnStyle(context),
           ),
         ),
       ],
@@ -504,26 +610,27 @@ class _AgentsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = LexiTheme.of(context);
     final agents = report.agents;
     return ListView(padding: const EdgeInsets.fromLTRB(24, 24, 24, 48), children: [
-      _sectionHeader('Análisis de Inteligencia Artificial (NLP)'),
+      _sectionHeader(context, 'Análisis de Inteligencia Artificial (NLP)'),
       const SizedBox(height: 4),
-      const Text('Tres agentes de IA trabajan en cadena para analizar la ley, evaluar el cumplimiento y registrar el resultado en la blockchain. Cada paso está trazado criptográficamente.',
-          style: TextStyle(color: _onSurfaceVariant, fontSize: 12, height: 1.4)),
+      Text('Tres agentes de IA trabajan en cadena para analizar la ley, evaluar el cumplimiento y registrar el resultado en la blockchain. Cada paso está trazado criptográficamente.',
+          style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12, height: 1.4)),
       const SizedBox(height: 16),
       _GlassCard(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Row(children: [
-              Icon(Icons.auto_awesome, size: 16, color: _primaryContainer),
-              SizedBox(width: 8),
-              Text('Pipeline de Agentes', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _onSurface)),
+            Row(children: [
+              const Icon(Icons.auto_awesome, size: 16, color: _darkPrimaryContainer),
+              const SizedBox(width: 8),
+              Text('Pipeline de Agentes', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: theme.onSurface)),
             ]),
             const SizedBox(height: 16),
             ...agents.entries.map((e) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: _agentDetailCard(Map<String, dynamic>.from(e.value)),
+              child: _agentDetailCard(context, Map<String, dynamic>.from(e.value)),
             )),
           ]),
         ),
@@ -542,22 +649,23 @@ class _SignaturesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = LexiTheme.of(context);
     final sigs = report.signatures;
     return ListView(padding: const EdgeInsets.fromLTRB(24, 24, 24, 48), children: [
-      _sectionHeader('Firmas Co-Partes y Poderes'),
+      _sectionHeader(context, 'Firmas Co-Partes y Poderes'),
       const SizedBox(height: 4),
-      const Text('Cada auditoría es firmada de forma independiente por las tres partes. Se requieren al menos 2 firmas válidas para que el registro sea vinculante.',
-          style: TextStyle(color: _onSurfaceVariant, fontSize: 12, height: 1.4)),
+      Text('Cada auditoría es firmada de forma independiente por las tres partes. Se requieren al menos 2 firmas válidas para que el registro sea vinculante.',
+          style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12, height: 1.4)),
       const SizedBox(height: 16),
       ...sigs.entries.map((e) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
-        child: _partyCard(Map<String, dynamic>.from(e.value)),
+        child: _partyCard(context, Map<String, dynamic>.from(e.value)),
       )),
       if (report.evidence != null) ...[
         const SizedBox(height: 20),
-        _sectionHeader('Evidencia de Firmas'),
+        _sectionHeader(context, 'Evidencia de Firmas'),
         const SizedBox(height: 8),
-        _hashCard('Hash de Recuperación', report.evidence!['recovery_hash'] as String? ?? '—', const Color(0xFF8B5CF6), context: context),
+        _hashCard('Hash de Recuperación', report.evidence!['recovery_hash'] as String? ?? '—', theme.primaryContainer, context: context),
       ],
     ]);
   }
@@ -573,15 +681,16 @@ class _ContractTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = LexiTheme.of(context);
     final ct = report.contract;
     final c = report.compliance;
     final hash = c['audit_hash'] as String? ?? '';
 
     return ListView(padding: const EdgeInsets.fromLTRB(24, 24, 24, 48), children: [
-      _sectionHeader('Sello Digital e Inmutabilidad Blockchain'),
+      _sectionHeader(context, 'Sello Digital e Inmutabilidad Blockchain'),
       const SizedBox(height: 4),
-      const Text('Cada auditoría queda registrada de forma permanente e inmutable en la red descentralizada Stellar (Soroban). Ninguna de las partes puede modificar, borrar o repudiar el resultado.',
-          style: TextStyle(color: _onSurfaceVariant, fontSize: 12, height: 1.4)),
+      Text('Cada auditoría queda registrada de forma permanente e inmutable en la red descentralizada Stellar (Soroban). Ninguna de las partes puede modificar, borrar o repudiar el resultado.',
+          style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12, height: 1.4)),
       const SizedBox(height: 16),
 
       _hashCardWithTooltip('Hash de Auditoría', hash,
@@ -593,17 +702,17 @@ class _ContractTab extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Row(children: [
-              Icon(Icons.verified, size: 16, color: _primaryContainer),
-              SizedBox(width: 8),
-              Text('Detalles del Contrato Inteligente', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _onSurface)),
+            Row(children: [
+              const Icon(Icons.verified, size: 16, color: _darkPrimaryContainer),
+              const SizedBox(width: 8),
+              Text('Detalles del Contrato Inteligente', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: theme.onSurface)),
             ]),
             const SizedBox(height: 16),
-            _contractRow('Red', ct['network'] as String? ?? '—', Icons.language),
-            _contractRow('ID del Contrato', ct['contract_id'] as String? ?? '—', Icons.tag),
-            _contractRow('Esquema de Firmas', '2 de 3 (Regulador, Entidad, Auditor)', Icons.group),
-            _contractRow('Hash Compilado', ct['compiled_hash'] as String? ?? '—', Icons.code),
-            _contractRow('Código Fuente', ct['source'] as String? ?? '—', Icons.source),
+            _contractRow(context, 'Red', ct['network'] as String? ?? '—', Icons.language),
+            _contractRow(context, 'ID del Contrato', ct['contract_id'] as String? ?? '—', Icons.tag),
+            _contractRow(context, 'Esquema de Firmas', '2 de 3 (Regulador, Entidad, Auditor)', Icons.group),
+            _contractRow(context, 'Hash Compilado', ct['compiled_hash'] as String? ?? '—', Icons.code),
+            _contractRow(context, 'Código Fuente', ct['source'] as String? ?? '—', Icons.source),
           ]),
         ),
       ),
@@ -613,17 +722,17 @@ class _ContractTab extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Row(children: [
-              Icon(Icons.help_outline, size: 16, color: _primaryContainer),
-              SizedBox(width: 8),
-              Text('¿Qué significa esto?', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _onSurface)),
+            Row(children: [
+              const Icon(Icons.help_outline, size: 16, color: _darkPrimaryContainer),
+              const SizedBox(width: 8),
+              Text('¿Qué significa esto?', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: theme.onSurface)),
             ]),
             const SizedBox(height: 12),
-            _explainRow(Icons.security, 'Inmutabilidad', 'Una vez registrado, el resultado no puede ser alterado por nadie.'),
-            const Divider(color: _outlineVariant, height: 24),
-            _explainRow(Icons.group, 'Multi-Firma', 'Se requieren 2 de 3 firmas independientes (CNBV, Fintech, LEXI) para validar.'),
-            const Divider(color: _outlineVariant, height: 24),
-            _explainRow(Icons.public, 'Red Descentralizada', 'Los datos no están en un servidor central, sino en la red pública Stellar.'),
+            _explainRow(context, Icons.security, 'Inmutabilidad', 'Una vez registrado, el resultado no puede ser alterado por nadie.'),
+            Divider(color: theme.outlineVariant.withOpacity(0.8), height: 24),
+            _explainRow(context, Icons.group, 'Multi-Firma', 'Se requieren 2 de 3 firmas independientes (CNBV, Fintech, LEXI) para validar.'),
+            Divider(color: theme.outlineVariant.withOpacity(0.8), height: 24),
+            _explainRow(context, Icons.public, 'Red Descentralizada', 'Los datos no están en un servidor central, sino en la red pública Stellar.'),
           ]),
         ),
       ),
@@ -641,11 +750,13 @@ class _GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = LexiTheme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: _glassBg.withOpacity(0.85),
+        color: theme.glassBg.withOpacity(theme.isDark ? 0.85 : 0.9),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _outlineVariant.withOpacity(0.5)),
+        border: Border.all(color: theme.outlineVariant.withOpacity(theme.isDark ? 0.5 : 0.3)),
+        boxShadow: theme.isDark ? null : [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: child,
     );
@@ -659,25 +770,26 @@ class _StyledField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = LexiTheme.of(context);
     return TextField(
       controller: controller,
-      style: const TextStyle(color: _onSurface, fontSize: 14),
+      style: TextStyle(color: theme.onSurface, fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: _outline),
+        hintStyle: TextStyle(color: theme.outline),
         filled: true,
-        fillColor: _surfaceContainerLow,
+        fillColor: theme.surfaceContainerLow,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: _outlineVariant),
+          borderSide: BorderSide(color: theme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: _outlineVariant),
+          borderSide: BorderSide(color: theme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: _primaryContainer),
+          borderSide: const BorderSide(color: _darkPrimaryContainer),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       ),
@@ -698,7 +810,7 @@ class _PrimaryButton extends StatelessWidget {
       icon: Icon(icon, size: 18),
       label: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
       style: ElevatedButton.styleFrom(
-        backgroundColor: _primaryContainer,
+        backgroundColor: _darkPrimaryContainer,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -707,24 +819,29 @@ class _PrimaryButton extends StatelessWidget {
   }
 }
 
-final _outlinedBtnStyle = OutlinedButton.styleFrom(
-  foregroundColor: _primaryContainer,
-  side: const BorderSide(color: _primaryContainer),
-  padding: const EdgeInsets.symmetric(vertical: 14),
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-);
-
-Widget _sectionHeader(String title) {
-  return Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _onSurface, letterSpacing: 0.3));
+ButtonStyle _outlinedBtnStyle(BuildContext context) {
+  final theme = LexiTheme.of(context);
+  return OutlinedButton.styleFrom(
+    foregroundColor: theme.primaryContainer,
+    side: BorderSide(color: theme.primaryContainer),
+    padding: const EdgeInsets.symmetric(vertical: 14),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  );
 }
 
-Widget _infoRow(String label, String value, Color color) {
+Widget _sectionHeader(BuildContext context, String title) {
+  final theme = LexiTheme.of(context);
+  return Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: theme.onSurface, letterSpacing: 0.3));
+}
+
+Widget _infoRow(BuildContext context, String label, String value, Color color) {
+  final theme = LexiTheme.of(context);
   return Container(
     width: double.infinity, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
     decoration: BoxDecoration(
-      color: _surfaceDocument,
+      color: theme.surfaceDocument,
       borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: _outlineVariant.withOpacity(0.5)),
+      border: Border.all(color: theme.outlineVariant.withOpacity(0.5)),
     ),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Expanded(flex: 2, child: Text(label, style: TextStyle(color: color.withOpacity(0.7), fontSize: 11, fontWeight: FontWeight.w500))),
@@ -735,10 +852,11 @@ Widget _infoRow(String label, String value, Color color) {
 }
 
 Widget _hashCard(String label, String value, Color color, {BuildContext? context}) {
+  final theme = context != null ? LexiTheme.of(context) : null;
   return Container(
     width: double.infinity, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
     decoration: BoxDecoration(
-      color: _surfaceDocument,
+      color: theme?.surfaceDocument ?? _darkSurfaceDocument,
       borderRadius: BorderRadius.circular(8),
       border: Border.all(color: color.withOpacity(0.2)),
     ),
@@ -756,7 +874,7 @@ Widget _hashCard(String label, String value, Color color, {BuildContext? context
               );
             }
           },
-          child: const Icon(Icons.content_copy, size: 14, color: _outline),
+          child: const Icon(Icons.content_copy, size: 14, color: _darkOutline),
         ),
       ]),
     ]),
@@ -764,30 +882,38 @@ Widget _hashCard(String label, String value, Color color, {BuildContext? context
 }
 
 Widget _hashCardWithTooltip(String label, String hash, String tooltip, {BuildContext? context}) {
+  final theme = context != null ? LexiTheme.of(context) : null;
+  final onSurf = theme?.onSurface ?? _darkOnSurface;
+  final surfVariant = theme?.onSurfaceVariant ?? _darkOnSurfaceVariant;
+  final primContainer = theme?.primaryContainer ?? _darkPrimaryContainer;
+  final prim = theme?.primary ?? _darkPrimary;
+  final outline = theme?.outline ?? _darkOutline;
+  final surfDim = theme?.surfaceDim ?? _darkSurfaceDim;
+  final outlineVar = theme?.outlineVariant ?? _darkOutlineVariant;
   return _GlassCard(
     child: Padding(
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Expanded(child: Text(label, style: const TextStyle(color: _onSurfaceVariant, fontSize: 11, fontWeight: FontWeight.w500))),
+          Expanded(child: Text(label, style: TextStyle(color: surfVariant, fontSize: 11, fontWeight: FontWeight.w500))),
           Tooltip(
             message: tooltip,
             triggerMode: TooltipTriggerMode.tap,
             decoration: BoxDecoration(
-              color: _surfaceDim,
+              color: surfDim,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: _outlineVariant),
+              border: Border.all(color: outlineVar),
             ),
-            textStyle: const TextStyle(color: _onSurface, fontSize: 12, height: 1.4),
+            textStyle: TextStyle(color: onSurf, fontSize: 12, height: 1.4),
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.all(16),
             preferBelow: false,
-            child: Icon(Icons.info_outline, size: 16, color: _primaryContainer.withOpacity(0.6)),
+            child: Icon(Icons.info_outline, size: 16, color: primContainer.withOpacity(0.6)),
           ),
         ]),
         const SizedBox(height: 6),
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(child: SelectableText(hash, style: TextStyle(color: _primary, fontSize: 12, fontFamily: 'monospace', letterSpacing: 0.3))),
+          Expanded(child: SelectableText(hash, style: TextStyle(color: prim, fontSize: 12, fontFamily: 'monospace', letterSpacing: 0.3))),
           InkWell(
             onTap: () {
               Clipboard.setData(ClipboardData(text: hash));
@@ -797,7 +923,7 @@ Widget _hashCardWithTooltip(String label, String hash, String tooltip, {BuildCon
                 );
               }
             },
-            child: const Icon(Icons.content_copy, size: 14, color: _outline),
+            child: Icon(Icons.content_copy, size: 14, color: outline),
           ),
         ]),
       ]),
@@ -805,45 +931,48 @@ Widget _hashCardWithTooltip(String label, String hash, String tooltip, {BuildCon
   );
 }
 
-Widget _statusTile(String title, String value, Color dotColor, IconData icon) {
+Widget _statusTile(BuildContext context, String title, String value, Color dotColor, IconData icon) {
+  final theme = LexiTheme.of(context);
   return Container(
     padding: const EdgeInsets.all(10),
     decoration: BoxDecoration(
-      color: _surfaceContainerLow,
+      color: theme.surfaceContainerLow,
       borderRadius: BorderRadius.circular(8),
       border: Border(left: BorderSide(color: dotColor, width: 3)),
     ),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(title.toUpperCase(), style: const TextStyle(color: _outline, fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+      Text(title.toUpperCase(), style: TextStyle(color: theme.outline, fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
       const SizedBox(height: 4),
       Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, size: 12, color: dotColor),
         const SizedBox(width: 4),
-        Flexible(child: Text(value, style: TextStyle(color: _onSurface, fontSize: 11, fontWeight: FontWeight.w600))),
+        Flexible(child: Text(value, style: TextStyle(color: theme.onSurface, fontSize: 11, fontWeight: FontWeight.w600))),
       ]),
     ]),
   );
 }
 
-Widget _pipelineStep(String title, String subtitle, IconData icon, Color color, bool active) {
+Widget _pipelineStep(BuildContext context, String title, String subtitle, IconData icon, Color color, bool active) {
+  final theme = LexiTheme.of(context);
   return Column(mainAxisSize: MainAxisSize.min, children: [
     Container(
       width: 48, height: 48,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: active ? _surfaceContainerHighest : _surfaceContainerLow,
-        border: Border.all(color: active ? color : _outlineVariant, width: 2),
+        color: active ? theme.surfaceContainerHighest : theme.surfaceContainerLow,
+        border: Border.all(color: active ? color : theme.outlineVariant, width: 2),
         boxShadow: active ? [BoxShadow(color: color.withOpacity(0.2), blurRadius: 12, spreadRadius: 2)] : null,
       ),
-      child: Icon(icon, color: active ? color : _outline, size: 20),
+      child: Icon(icon, color: active ? color : theme.outline, size: 20),
     ),
     const SizedBox(height: 8),
-    Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: active ? _onSurface : _outline)),
-    Text(subtitle, style: TextStyle(fontSize: 9, color: active ? _onSurfaceVariant : _outline, letterSpacing: 0.3)),
+    Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: active ? theme.onSurface : theme.outline)),
+    Text(subtitle, style: TextStyle(fontSize: 9, color: active ? theme.onSurfaceVariant : theme.outline, letterSpacing: 0.3)),
   ]);
 }
 
-Widget _ruleCard(Map<String, dynamic> rule) {
+Widget _ruleCard(BuildContext context, Map<String, dynamic> rule) {
+  final theme = LexiTheme.of(context);
   final compliant = rule['compliant'] as bool? ?? false;
   final type = rule['type'] as String? ?? '';
   final article = rule['article'] as String? ?? '';
@@ -854,7 +983,7 @@ Widget _ruleCard(Map<String, dynamic> rule) {
   final snippet = rule['law_snippet'] as String? ?? '';
 
   final bool isProhibition = type == 'Prohibition';
-  final Color accent = isProhibition ? _alert : _warning;
+  final Color accent = isProhibition ? theme.alert : theme.warning;
   final String badge = isProhibition ? 'PROHIBICIÓN' : 'OBLIGACIÓN';
   final IconData badgeIcon = isProhibition ? Icons.block : Icons.assignment_late;
 
@@ -880,43 +1009,43 @@ Widget _ruleCard(Map<String, dynamic> rule) {
             ]),
           ),
           const SizedBox(width: 8),
-          Text(article, style: const TextStyle(color: _outline, fontSize: 11)),
+          Text(article, style: TextStyle(color: theme.outline, fontSize: 11)),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: (compliant ? _success : _alert).withOpacity(0.1),
+              color: (compliant ? theme.success : theme.alert).withOpacity(0.1),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(compliant ? 'CUMPLE' : 'INCUMPLE',
-                style: TextStyle(color: compliant ? _success : _alert, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.3)),
+                style: TextStyle(color: compliant ? theme.success : theme.alert, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.3)),
           ),
         ]),
         const SizedBox(height: 10),
-        Text(text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: _onSurface)),
+        Text(text, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: theme.onSurface)),
         const SizedBox(height: 4),
-        Text(desc, style: const TextStyle(color: _onSurfaceVariant, fontSize: 12)),
+        Text(desc, style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12)),
         const SizedBox(height: 6),
         Row(children: [
-          Text('Límite: $threshold  |  Real: $actual', style: const TextStyle(color: _onSurfaceVariant, fontSize: 11)),
+          Text('Límite: $threshold  |  Real: $actual', style: TextStyle(color: theme.onSurfaceVariant, fontSize: 11)),
         ]),
         if (snippet.isNotEmpty) ...[
           const SizedBox(height: 10),
           Container(
             width: double.infinity, padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: _surfaceDim,
+              color: theme.surfaceDim,
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: _outlineVariant.withOpacity(0.5)),
+              border: Border.all(color: theme.outlineVariant.withOpacity(0.5)),
             ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                const Icon(Icons.search, size: 12, color: _primaryContainer),
+                const Icon(Icons.search, size: 12, color: _darkPrimaryContainer),
                 const SizedBox(width: 4),
-                Text('Trazabilidad — Texto de la Ley', style: TextStyle(color: _primaryContainer.withOpacity(0.7), fontSize: 9, fontWeight: FontWeight.w600, letterSpacing: 0.3)),
+                Text('Trazabilidad — Texto de la Ley', style: TextStyle(color: theme.primaryContainer.withOpacity(0.7), fontSize: 9, fontWeight: FontWeight.w600, letterSpacing: 0.3)),
               ]),
               const SizedBox(height: 4),
-              Text(snippet, style: const TextStyle(color: _onSurfaceVariant, fontSize: 11, height: 1.4)),
+              Text(snippet, style: TextStyle(color: theme.onSurfaceVariant, fontSize: 11, height: 1.4)),
             ]),
           ),
         ],
@@ -925,37 +1054,40 @@ Widget _ruleCard(Map<String, dynamic> rule) {
   );
 }
 
-Widget _contractRow(String label, String value, IconData icon) {
+Widget _contractRow(BuildContext context, String label, String value, IconData icon) {
+  final theme = LexiTheme.of(context);
   return Padding(
     padding: const EdgeInsets.only(bottom: 8),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(icon, size: 14, color: _primaryContainer),
+      Icon(icon, size: 14, color: theme.primaryContainer),
       const SizedBox(width: 8),
-      SizedBox(width: 100, child: Text(label, style: const TextStyle(color: _onSurfaceVariant, fontSize: 12))),
-      Expanded(child: Text(value, style: const TextStyle(color: _onSurface, fontSize: 12, fontWeight: FontWeight.w500))),
+      SizedBox(width: 100, child: Text(label, style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12))),
+      Expanded(child: Text(value, style: TextStyle(color: theme.onSurface, fontSize: 12, fontWeight: FontWeight.w500))),
     ]),
   );
 }
 
-Widget _explainRow(IconData icon, String title, String desc) {
+Widget _explainRow(BuildContext context, IconData icon, String title, String desc) {
+  final theme = LexiTheme.of(context);
   return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Icon(icon, size: 18, color: _primaryContainer),
+    Icon(icon, size: 18, color: theme.primaryContainer),
     const SizedBox(width: 10),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: _onSurface)),
+      Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: theme.onSurface)),
       const SizedBox(height: 2),
-      Text(desc, style: const TextStyle(color: _onSurfaceVariant, fontSize: 12)),
+      Text(desc, style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12)),
     ])),
   ]);
 }
 
-Widget _partyCard(Map<String, dynamic> party) {
+Widget _partyCard(BuildContext context, Map<String, dynamic> party) {
+  final theme = LexiTheme.of(context);
   final verified = party['verified'] as bool? ?? false;
   final role = party['role'] as String? ?? '';
   final name = party['party_name'] as String? ?? '';
   final pid = party['party_id'] as String? ?? '';
   final sig = party['signature'] as String? ?? '';
-  final Color color = verified ? _success : _alert;
+  final Color color = verified ? theme.success : theme.alert;
 
   IconData icon;
   if (role.contains('Regulador')) icon = Icons.account_balance;
@@ -974,9 +1106,9 @@ Widget _partyCard(Map<String, dynamic> party) {
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: _onSurface)),
+            Text(name, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: theme.onSurface)),
             const SizedBox(height: 2),
-            Text('$role  •  $pid', style: const TextStyle(color: _onSurfaceVariant, fontSize: 11)),
+            Text('$role  •  $pid', style: TextStyle(color: theme.onSurfaceVariant, fontSize: 11)),
           ])),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -987,9 +1119,9 @@ Widget _partyCard(Map<String, dynamic> party) {
         const SizedBox(height: 12),
         Container(
           width: double.infinity, padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: _surfaceDeep, borderRadius: BorderRadius.circular(6), border: Border.all(color: _outlineVariant.withOpacity(0.5))),
+          decoration: BoxDecoration(color: theme.surfaceDeep, borderRadius: BorderRadius.circular(6), border: Border.all(color: theme.outlineVariant.withOpacity(0.5))),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Firma:', style: TextStyle(color: _outline, fontSize: 10)),
+            Text('Firma:', style: TextStyle(color: theme.outline, fontSize: 10)),
             const SizedBox(width: 6),
             Expanded(child: SelectableText(sig, style: TextStyle(color: color, fontSize: 10, fontFamily: 'monospace'))),
           ]),
@@ -999,7 +1131,8 @@ Widget _partyCard(Map<String, dynamic> party) {
   );
 }
 
-Widget _agentDetailCard(Map<String, dynamic> agent) {
+Widget _agentDetailCard(BuildContext context, Map<String, dynamic> agent) {
+  final theme = LexiTheme.of(context);
   final name = agent['agent'] as String? ?? '';
   final model = agent['model'] as String? ?? '';
   final version = agent['version'] as String? ?? '';
@@ -1014,27 +1147,27 @@ Widget _agentDetailCard(Map<String, dynamic> agent) {
   return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
     Container(
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: _primaryContainer.withOpacity(0.1), shape: BoxShape.circle),
-      child: Icon(icon, color: _primaryContainer, size: 18),
+      decoration: BoxDecoration(color: theme.primaryContainer.withOpacity(0.1), shape: BoxShape.circle),
+      child: Icon(icon, color: theme.primaryContainer, size: 18),
     ),
     const SizedBox(width: 12),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
-        Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: _onSurface))),
+        Expanded(child: Text(name, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: theme.onSurface))),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(color: _outlineVariant.withOpacity(0.3), borderRadius: BorderRadius.circular(4)),
-          child: Text('v$version', style: const TextStyle(color: _outline, fontSize: 10)),
+          decoration: BoxDecoration(color: theme.outlineVariant.withOpacity(0.3), borderRadius: BorderRadius.circular(4)),
+          child: Text('v$version', style: TextStyle(color: theme.outline, fontSize: 10)),
         ),
       ]),
       const SizedBox(height: 2),
-      Text(model, style: const TextStyle(color: _onSurfaceVariant, fontSize: 11)),
+      Text(model, style: TextStyle(color: theme.onSurfaceVariant, fontSize: 11)),
       const SizedBox(height: 6),
       ...outputs.entries.map((e) => Padding(
         padding: const EdgeInsets.only(bottom: 2),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('${_outputLabel(e.key)}: ', style: const TextStyle(color: _outline, fontSize: 11)),
-          Expanded(child: Text(_fmtOutput(e.value), style: const TextStyle(color: _onSurface, fontSize: 11))),
+          Text('${_outputLabel(e.key)}: ', style: TextStyle(color: theme.outline, fontSize: 11)),
+          Expanded(child: Text(_fmtOutput(e.value), style: TextStyle(color: theme.onSurface, fontSize: 11))),
         ]),
       )),
     ])),
@@ -1067,6 +1200,7 @@ String _fmtOutput(dynamic v) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 void _showCertificate(BuildContext context, AuditReport report) {
+  final theme = LexiTheme.of(context);
   final c = report.compliance;
   final meta = report.metadata;
   final status = c['status'] as bool? ?? false;
@@ -1079,48 +1213,49 @@ void _showCertificate(BuildContext context, AuditReport report) {
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      backgroundColor: _surfaceContainerHigh,
+      backgroundColor: theme.surfaceContainerHigh,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       content: SizedBox(
         width: double.maxFinite,
         child: SingleChildScrollView(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-            Center(child: Icon(status ? Icons.verified : Icons.warning_amber_rounded, color: status ? _success : _alert, size: 40)),
+            Center(child: Icon(status ? Icons.verified : Icons.warning_amber_rounded, color: status ? theme.success : theme.alert, size: 40)),
             const SizedBox(height: 8),
             Center(child: Text(status ? 'CERTIFICADO DE CUMPLIMIENTO' : 'CERTIFICADO DE INCUMPLIMIENTO',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: status ? _success : _alert, letterSpacing: 0.5))),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: status ? theme.success : theme.alert, letterSpacing: 0.5))),
             const SizedBox(height: 16),
-            _certLine('Entidad Regulada', meta['regulated_entity'] as String? ?? '—'),
-            _certLine('Período Auditado', meta['audit_period'] as String? ?? '—'),
-            _certLine('Marco Regulatorio', meta['regulatory_framework'] as String? ?? '—'),
-            _certLine('Resultado', status ? 'CUMPLIMIENTO TOTAL' : 'INCUMPLIMIENTO DETECTADO'),
-            _certLine('Reglas Evaluadas', '$rulesCount'),
-            _certLine('Reglas Cumplidas', '$compliantCount'),
-            _certLine('Fecha de Emisión', '${now.day}/${now.month}/${now.year} ${now.hour}:${now.minute.toString().padLeft(2, '0')}'),
-            _certLine('Versión', meta['version'] as String? ?? '—'),
+            _certLine(context, 'Entidad Regulada', meta['regulated_entity'] as String? ?? '—'),
+            _certLine(context, 'Período Auditado', meta['audit_period'] as String? ?? '—'),
+            _certLine(context, 'Marco Regulatorio', meta['regulatory_framework'] as String? ?? '—'),
+            _certLine(context, 'Resultado', status ? 'CUMPLIMIENTO TOTAL' : 'INCUMPLIMIENTO DETECTADO'),
+            _certLine(context, 'Reglas Evaluadas', '$rulesCount'),
+            _certLine(context, 'Reglas Cumplidas', '$compliantCount'),
+            _certLine(context, 'Fecha de Emisión', '${now.day}/${now.month}/${now.year} ${now.hour}:${now.minute.toString().padLeft(2, '0')}'),
+            _certLine(context, 'Versión', meta['version'] as String? ?? '—'),
             const SizedBox(height: 12),
-            const Text('Hash de Certificación:', style: TextStyle(color: _outline, fontSize: 9)),
+            Text('Hash de Certificación:', style: TextStyle(color: theme.outline, fontSize: 9)),
             const SizedBox(height: 2),
-            SelectableText(hash, style: TextStyle(color: _primary, fontSize: 10, fontFamily: 'monospace')),
+            SelectableText(hash, style: TextStyle(color: theme.primary, fontSize: 10, fontFamily: 'monospace')),
             const SizedBox(height: 4),
-            const Text('Este certificado es una representación digital del resultado de la auditoría. El hash SHA-256 es la evidencia criptográfica vinculada a la red Stellar (Soroban).',
-                style: TextStyle(color: _outline, fontSize: 9, height: 1.3)),
+            Text('Este certificado es una representación digital del resultado de la auditoría. El hash SHA-256 es la evidencia criptográfica vinculada a la red Stellar (Soroban).',
+                style: TextStyle(color: theme.outline, fontSize: 9, height: 1.3)),
           ]),
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CERRAR', style: TextStyle(color: _outline))),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text('CERRAR', style: TextStyle(color: theme.outline))),
       ],
     ),
   );
 }
 
-Widget _certLine(String label, String value) {
+Widget _certLine(BuildContext context, String label, String value) {
+  final theme = LexiTheme.of(context);
   return Padding(
     padding: const EdgeInsets.only(bottom: 6),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SizedBox(width: 130, child: Text(label, style: const TextStyle(color: _outline, fontSize: 11))),
-      Expanded(child: Text(value, style: const TextStyle(color: _onSurface, fontSize: 11, fontWeight: FontWeight.w500))),
+      SizedBox(width: 130, child: Text(label, style: TextStyle(color: theme.outline, fontSize: 11))),
+      Expanded(child: Text(value, style: TextStyle(color: theme.onSurface, fontSize: 11, fontWeight: FontWeight.w500))),
     ]),
   );
 }
