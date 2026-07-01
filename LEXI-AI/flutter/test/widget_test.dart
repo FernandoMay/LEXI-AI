@@ -5,17 +5,17 @@ import 'package:lexi_ai/main.dart';
 void main() {
   testWidgets('LEXI AI dashboard renders', (WidgetTester tester) async {
     await tester.pumpWidget(const LexiAiApp());
-    expect(find.text('LEXI AI // Intelligent Legal Network'), findsOneWidget);
-    expect(find.text('INITIALIZE PIPELINE'), findsOneWidget);
+    expect(find.text('LEXI AI  •  Red de Cumplimiento Inteligente'), findsOneWidget);
+    expect(find.text('INICIAR AUDITORÍA'), findsOneWidget);
     expect(find.text('LEXI AI'), findsOneWidget);
+    expect(find.text('RegTech • Auditoría Asistida por IA • Blockchain'), findsOneWidget);
   });
 
-  testWidgets('Pipeline execution shows tabs', (WidgetTester tester) async {
+  testWidgets('Pipeline execution shows compliance verdict', (WidgetTester tester) async {
     await tester.pumpWidget(const LexiAiApp());
-    await tester.tap(find.text('INITIALIZE PIPELINE'));
+    await tester.tap(find.text('INICIAR AUDITORÍA'));
     await tester.pumpAndSettle(const Duration(seconds: 3));
-    expect(find.text('Compliance Verdict'), findsOneWidget);
-    expect(find.text('SHA-256 AUDIT HASH'), findsOneWidget);
-    expect(find.text('Audit Trail'), findsOneWidget);
+    expect(find.text('Dictamen de Cumplimiento'), findsOneWidget);
+    expect(find.text('CUMPLIMIENTO TOTAL'), findsOneWidget);
   });
 }
