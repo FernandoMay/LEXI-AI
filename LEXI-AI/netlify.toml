@@ -1,15 +1,10 @@
 [build]
-  publish = "flutter/build/web"
-  command = "cd flutter && flutter build web --release && copy /Y web\\landing.html build\\web\\landing.html"
+  publish = "deploy"
+  command = "cd flutter && flutter build web --release --base-href=/app/ && cd .. && if not exist deploy mkdir deploy && if not exist deploy\\app mkdir deploy\\app && copy /Y flutter\\web\\landing.html deploy\\index.html && xcopy /E /Y flutter\\build\\web deploy\\app\\"
 
 [[redirects]]
-  from = "/landing.html"
-  to = "/landing.html"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/app/*"
+  to = "/app/index.html"
   status = 200
 
 [[headers]]

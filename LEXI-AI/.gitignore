@@ -30,3 +30,4 @@ Thumbs.db
 
 # Cargo local config (user-specific)
 .cargo/config.toml
+deploy/
