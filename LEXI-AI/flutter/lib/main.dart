@@ -295,7 +295,7 @@ class _LexiHomeState extends State<LexiHome> {
           children: [
             const LexiLogo(size: 32),
             const SizedBox(width: 10),
-            const Text('LEXI AI  •  LexGuardian Compliance'),
+            Flexible(child: Text('LEXI AI  •  LexGuardian Compliance', overflow: TextOverflow.ellipsis)),
           ],
         ),
         actions: [
@@ -441,59 +441,21 @@ class _DashboardTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
       children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(flex: 7, child: _GlassCard(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: theme.primaryContainer.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.dashboard, size: 20, color: _darkPrimaryContainer),
-                  ),
-                  const SizedBox(width: 12),
-                  Flexible(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Command Center', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: theme.onSurface)),
-                    Text('${meta['regulated_entity'] ?? '—'}  |  ${meta['audit_period'] ?? '—'}', style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12), overflow: TextOverflow.ellipsis),
-                  ])),
-                ]),
-                const SizedBox(height: 20),
-                LayoutBuilder(builder: (ctx, constraints) {
-                  final tileWidth = (constraints.maxWidth - 16) / 3;
-                  return Row(children: [
-                    SizedBox(width: tileWidth, child: _statusTile(context, 'Motor NLP', 'Activo (v4.1)', theme.success, Icons.auto_awesome)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: tileWidth, child: _statusTile(context, 'Soroban Sync', 'Sincronizado', theme.primary, Icons.sync)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: tileWidth, child: _statusTile(context, 'Inmutabilidad', '99.9%', theme.warning, Icons.verified_user)),
-                  ]);
-                }),
-              ]),
-            ),
-          )),
-          const SizedBox(width: 20),
-          Expanded(flex: 5, child: _GlassCard(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Cumplimiento', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: theme.onSurface)),
-                const SizedBox(height: 4),
-                Text('Valide la integridad de todos los expedientes procesados en el ciclo actual.',
-                    style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12)),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: _PrimaryButton(
-                    label: 'Generar Certificado (PDF)',
-                    icon: Icons.picture_as_pdf,
-                    onPressed: () => _showCertificate(context, report),
-                  ),
-                ),
-              ]),
-            ),
-          )),
-        ]),
+        LayoutBuilder(builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 700;
+          if (isWide) {
+            return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(flex: 7, child: _commandCenterCard(context, theme, c, meta, status)),
+              const SizedBox(width: 20),
+              Expanded(flex: 5, child: _complianceCard(theme, context, report)),
+            ]);
+          }
+          return Column(children: [
+            _commandCenterCard(context, theme, c, meta, status),
+            const SizedBox(height: 16),
+            _complianceCard(theme, context, report),
+          ]);
+        }),
         const SizedBox(height: 24),
 
         _sectionHeader(context, 'Pipeline de Procesamiento'),
@@ -501,12 +463,22 @@ class _DashboardTab extends StatelessWidget {
         _GlassCard(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
-            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              _pipelineStep(context, 'IA (NLP)', 'Extracción', Icons.psychology, theme.primary, true),
-              _pipelineStep(context, 'Compliance', 'Validación', Icons.balance, theme.warning, true),
-              _pipelineStep(context, 'Blockchain', 'Inmutabilidad', Icons.verified, theme.success, true),
-              _pipelineStep(context, 'Resguardo', 'Archivado', Icons.inventory_2, theme.outline, false),
-            ]),
+            child: LayoutBuilder(builder: (ctx, constraints) {
+              if (constraints.maxWidth > 500) {
+                return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  _pipelineStep(context, 'IA (NLP)', 'Extracción', Icons.psychology, theme.primary, true),
+                  _pipelineStep(context, 'Compliance', 'Validación', Icons.balance, theme.warning, true),
+                  _pipelineStep(context, 'Blockchain', 'Inmutabilidad', Icons.verified, theme.success, true),
+                  _pipelineStep(context, 'Resguardo', 'Archivado', Icons.inventory_2, theme.outline, false),
+                ]);
+              }
+              return Wrap(spacing: 16, runSpacing: 16, alignment: WrapAlignment.center, children: [
+                _pipelineStep(context, 'IA (NLP)', 'Extracción', Icons.psychology, theme.primary, true),
+                _pipelineStep(context, 'Compliance', 'Validación', Icons.balance, theme.warning, true),
+                _pipelineStep(context, 'Blockchain', 'Inmutabilidad', Icons.verified, theme.success, true),
+                _pipelineStep(context, 'Resguardo', 'Archivado', Icons.inventory_2, theme.outline, false),
+              ]);
+            }),
           ),
         ),
         const SizedBox(height: 24),
@@ -589,6 +561,62 @@ class _DashboardTab extends StatelessWidget {
       case 'anonymous_accounts': return 'Cuentas Anónimas';
       default: return k.replaceAll('_', ' ');
     }
+  }
+
+  Widget _commandCenterCard(BuildContext context, LexiTheme theme, Map<String, dynamic> c, Map<String, dynamic> meta, bool status) {
+    return _GlassCard(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: theme.primaryContainer.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+              child: const Icon(Icons.dashboard, size: 20, color: _darkPrimaryContainer),
+            ),
+            const SizedBox(width: 12),
+            Flexible(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Command Center', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: theme.onSurface)),
+              Text('${meta['regulated_entity'] ?? '—'}  |  ${meta['audit_period'] ?? '—'}', style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12), overflow: TextOverflow.ellipsis),
+            ])),
+          ]),
+          const SizedBox(height: 20),
+          LayoutBuilder(builder: (ctx, constraints) {
+            final tileWidth = (constraints.maxWidth - 16) / 3;
+            return Row(children: [
+              SizedBox(width: tileWidth, child: _statusTile(context, 'Motor NLP', 'Activo (v4.1)', theme.success, Icons.auto_awesome)),
+              const SizedBox(width: 8),
+              SizedBox(width: tileWidth, child: _statusTile(context, 'Soroban Sync', 'Sincronizado', theme.primary, Icons.sync)),
+              const SizedBox(width: 8),
+              SizedBox(width: tileWidth, child: _statusTile(context, 'Inmutabilidad', '99.9%', theme.warning, Icons.verified_user)),
+            ]);
+          }),
+        ]),
+      ),
+    );
+  }
+
+  Widget _complianceCard(LexiTheme theme, BuildContext context, AuditReport report) {
+    return _GlassCard(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Cumplimiento', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: theme.onSurface)),
+          const SizedBox(height: 4),
+          Text('Valide la integridad de todos los expedientes procesados en el ciclo actual.',
+              style: TextStyle(color: theme.onSurfaceVariant, fontSize: 12)),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: _PrimaryButton(
+              label: 'Generar Certificado (PDF)',
+              icon: Icons.picture_as_pdf,
+              onPressed: () => _showCertificate(context, report),
+            ),
+          ),
+        ]),
+      ),
+    );
   }
 }
 
