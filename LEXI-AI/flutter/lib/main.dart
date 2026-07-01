@@ -293,11 +293,7 @@ class _LexiHomeState extends State<LexiHome> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(color: theme.primaryContainer.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
-              child: const Icon(Icons.gavel, size: 18, color: _darkPrimaryContainer),
-            ),
+            const LexiLogo(size: 32),
             const SizedBox(width: 10),
             const Text('LEXI AI  •  LexGuardian Compliance'),
           ],
@@ -394,11 +390,7 @@ class _LexiHomeState extends State<LexiHome> {
   Widget _buildEmptyState(LexiTheme theme) {
     return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(color: theme.primaryContainer.withOpacity(0.1), shape: BoxShape.circle),
-          child: const Icon(Icons.gavel, size: 48, color: _darkPrimaryContainer),
-        ),
+        const LexiLogo(size: 80),
         const SizedBox(height: 20),
         Text('LEXI AI — LexGuardian Compliance', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: theme.onSurface, letterSpacing: 0.3)),
         const SizedBox(height: 8),
@@ -743,6 +735,130 @@ class _ContractTab extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // WIDGETS — Shared
 // ─────────────────────────────────────────────────────────────────────────────
+
+class LexiLogo extends StatelessWidget {
+  final double size;
+  const LexiLogo({super.key, this.size = 48});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(width: size, height: size, child: CustomPaint(painter: _LexiLogoPainter()));
+  }
+}
+
+class _LexiLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width / 200;
+    canvas.scale(s, s);
+
+    final shieldFill = Paint()..color = const Color(0xFF102034);
+    final shieldStroke = Paint()
+      ..color = const Color(0xFF262B3C)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    final lShader = const LinearGradient(
+      begin: Alignment.bottomLeft, end: Alignment.topRight,
+      colors: [Color(0xFF2563EB), Color(0xFF6C5CE7), Color(0xFF10B981)],
+    ).createShader(const Rect.fromLTWH(0, 0, 200, 200));
+
+    final lPaintLeft = Paint()..shader = lShader;
+    final lPaintRight = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.bottomLeft, end: Alignment.topRight,
+        colors: [Color(0xE62563EB), Color(0xE66C5CE7), Color(0xE610B981)],
+      ).createShader(const Rect.fromLTWH(0, 0, 200, 200));
+
+    final topFacePaint = Paint()..color = const Color(0xFFB4C5FF).withOpacity(0.3);
+
+    final shadowPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter, end: Alignment.bottomCenter,
+        colors: [Color(0x00031427), Color(0x99031427)],
+      ).createShader(const Rect.fromLTWH(0, 0, 200, 200));
+
+    final oracleFill = Paint()..color = const Color(0xFF031427);
+    final oracleStroke = Paint()
+      ..color = const Color(0xFF10B981)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+    final oracleCoreFill = Paint()..color = const Color(0xFF10B981);
+
+    // Hexagon shield
+    final hex = Path();
+    hex.moveTo(100, 25);
+    hex.lineTo(165, 62.5);
+    hex.lineTo(165, 137.5);
+    hex.lineTo(100, 175);
+    hex.lineTo(35, 137.5);
+    hex.lineTo(35, 62.5);
+    hex.close();
+    canvas.drawShadow(hex, const Color(0xFF031427), 12, false);
+    canvas.drawPath(hex, shieldFill);
+    canvas.drawPath(hex, shieldStroke);
+
+    // L front-left
+    final lLeft = Path();
+    lLeft.moveTo(65, 62.5);
+    lLeft.lineTo(100, 82.5);
+    lLeft.lineTo(100, 142.5);
+    lLeft.lineTo(65, 122.5);
+    lLeft.close();
+    canvas.drawPath(lLeft, lPaintLeft);
+
+    // L front-right
+    final lRight = Path();
+    lRight.moveTo(100, 142.5);
+    lRight.lineTo(135, 122.5);
+    lRight.lineTo(135, 102.5);
+    lRight.lineTo(100, 122.5);
+    lRight.close();
+    canvas.drawPath(lRight, lPaintRight);
+
+    // Top face
+    final top = Path();
+    top.moveTo(100, 42.5);
+    top.lineTo(135, 62.5);
+    top.lineTo(100, 82.5);
+    top.lineTo(65, 62.5);
+    top.close();
+    canvas.drawPath(top, topFacePaint);
+
+    // Shadow mask
+    final mask = Path();
+    mask.moveTo(100, 82.5);
+    mask.lineTo(135, 102.5);
+    mask.lineTo(100, 122.5);
+    mask.lineTo(65, 102.5);
+    mask.close();
+    canvas.drawPath(mask, shadowPaint);
+
+    // Oracle diamond (translated +15, -5)
+    canvas.save();
+    canvas.translate(15, -5);
+    final oracle = Path();
+    oracle.moveTo(120, 80);
+    oracle.lineTo(135, 95);
+    oracle.lineTo(120, 110);
+    oracle.lineTo(105, 95);
+    oracle.close();
+    canvas.drawPath(oracle, oracleFill);
+    canvas.drawPath(oracle, oracleStroke);
+
+    final core = Path();
+    core.moveTo(120, 86);
+    core.lineTo(129, 95);
+    core.lineTo(120, 104);
+    core.lineTo(111, 95);
+    core.close();
+    canvas.drawPath(core, oracleCoreFill);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 
 class _GlassCard extends StatelessWidget {
   final Widget child;
