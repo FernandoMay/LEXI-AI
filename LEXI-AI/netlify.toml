@@ -1,6 +1,11 @@
 [build]
   publish = "flutter/build/web"
-  command = "cd flutter && flutter build web --release"
+  command = "cd flutter && flutter build web --release && copy /Y web\\landing.html build\\web\\landing.html"
+
+[[redirects]]
+  from = "/landing.html"
+  to = "/landing.html"
+  status = 200
 
 [[redirects]]
   from = "/*"
