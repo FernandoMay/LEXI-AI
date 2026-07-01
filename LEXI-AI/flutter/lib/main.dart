@@ -161,6 +161,12 @@ class _LexiHomeState extends State<LexiHome> {
   static const _tabIcons = [Icons.dashboard, Icons.auto_awesome, Icons.history_edu, Icons.verified];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _executePipeline());
+  }
+
+  @override
   void dispose() { _ngrokController.dispose(); super.dispose(); }
 
   Future<void> _executePipeline() async {
