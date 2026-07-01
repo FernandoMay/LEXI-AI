@@ -15,7 +15,7 @@ void main() {
     await tester.tap(find.text('INITIALIZE PIPELINE'));
     await tester.pumpAndSettle(const Duration(seconds: 3));
     expect(find.text('Compliance Verdict'), findsOneWidget);
-    expect(find.text('SHA-256 HASH'), findsOneWidget);
+    expect(find.text('SHA-256 AUDIT HASH'), findsOneWidget);
     expect(find.text('Audit Trail'), findsOneWidget);
   });
 }

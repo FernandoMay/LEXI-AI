@@ -1,8 +1,9 @@
-"""Integration tests: NLP Agent → Compliance → Multi-Party Signatures → Report."""
+"""Integration tests: NLP → Compliance → Multi-Party Signatures → AST-bound hash."""
 import json
 import sys
 import os
 import unittest
+import hashlib
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from orchestrator.lexi_pipeline import run_pipeline
@@ -46,20 +47,54 @@ class TestIntegration(unittest.TestCase):
         report = run_pipeline()
         ct = report["contract"]
         self.assertIn("contract_id", ct)
-        self.assertIn("network", ct)
-        self.assertIn("registration_tx", ct)
-        self.assertIn("source", ct)
+        self.assertIn("multi_sig_required", ct)
+        self.assertEqual(ct["multi_sig_required"], 2)
 
-    def test_audit_hash_format(self):
+    def test_ast_hash_present(self):
         report = run_pipeline()
-        h = report["compliance"]["audit_hash"]
+        self.assertIn("ast_hash", report["compliance"])
+        h = report["compliance"]["ast_hash"]
         self.assertEqual(len(h), 64)
         int(h, 16)
+
+    def test_audit_hash_includes_ast(self):
+        """Audit hash must differ from AST hash (it binds AST + compliance status)."""
+        report = run_pipeline()
+        self.assertNotEqual(
+            report["compliance"]["audit_hash"],
+            report["compliance"]["ast_hash"],
+        )
 
     def test_compliance_pass(self):
         report = run_pipeline()
         self.assertTrue(report["compliance"]["status"])
         self.assertEqual(len(report["compliance"]["violations"]), 0)
+
+    def test_compliance_fail_high_transaction(self):
+        """Transaction amount exceeding threshold triggers violation."""
+        report = run_pipeline(operational_context={
+            "transaction_amount": 60000,
+            "anonymous_accounts": 0,
+            "kyc_threshold": 0,
+            "max_interest_rate": 36,
+            "crowdfunding_limit": 500000,
+            "money_laundering_flag": 0,
+        })
+        self.assertFalse(report["compliance"]["status"])
+        self.assertIn("OBL-001", report["compliance"]["violations"])
+
+    def test_compliance_fail_anonymous_accounts(self):
+        """Anonymous accounts flag triggers prohibition violation."""
+        report = run_pipeline(operational_context={
+            "transaction_amount": 0,
+            "anonymous_accounts": 1,
+            "kyc_threshold": 0,
+            "max_interest_rate": 36,
+            "crowdfunding_limit": 500000,
+            "money_laundering_flag": 0,
+        })
+        self.assertFalse(report["compliance"]["status"])
+        self.assertIn("PRO-001", report["compliance"]["violations"])
 
     def test_output_json_serializable(self):
         report = run_pipeline()
@@ -79,6 +114,15 @@ class TestIntegration(unittest.TestCase):
         evidence = report["evidence"]
         self.assertIn("core_payload", evidence)
         self.assertIn("recovery_hash", evidence)
+
+    def test_nlp_method_in_rules(self):
+        report = run_pipeline()
+        for rule in report["agents"]["nlp_agent"]["outputs"]["rules"]:
+            self.assertIn("method", rule)
+
+    def test_version_2_metadata(self):
+        report = run_pipeline()
+        self.assertEqual(report["metadata"]["version"], "2.0.0")
 
 
 if __name__ == "__main__":

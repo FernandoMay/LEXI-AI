@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""FastAPI server exposing the LEXI AI full audit pipeline as a REST API."""
+"""
+LEXI AI — FastAPI REST Server
+Pydantic-validated endpoints with strict input sanitization.
+"""
 import sys
 import os
-import json
-from fastapi import FastAPI, Query
+import re
+from typing import Optional
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field, field_validator
 import uvicorn
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from orchestrator.lexi_pipeline import run_pipeline
 
-app = FastAPI(title="LEXI AI Pipeline API", version="1.0.0")
+app = FastAPI(title="LEXI AI Pipeline API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,9 +25,41 @@ app.add_middleware(
 )
 
 
+# ── Strict input models ──────────────────────────────────────────────────────
+class PipelineRequest(BaseModel):
+    law: Optional[str] = Field(None, description="Path to legal text file")
+
+    @field_validator("law")
+    @classmethod
+    def sanitize_path(cls, v):
+        if v is None:
+            return v
+        # Block path traversal and shell injection
+        if ".." in v or ";" in v or "|" in v or "`" in v or "$" in v:
+            raise HTTPException(400, "Invalid path: path traversal or shell metacharacters detected")
+        # Only allow alphanumeric, slash, dot, underscore, hyphen
+        if not re.match(r"^[\w/\\.\-]+$", v):
+            raise HTTPException(400, "Invalid path: only alphanumeric, /, ., -, _ allowed")
+        # Verify file exists and is within project tree
+        full = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", v))
+        project = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        if not full.startswith(project):
+            raise HTTPException(400, "Path escapes project directory")
+        if not os.path.isfile(full):
+            raise HTTPException(404, f"File not found: {v}")
+        return v
+
+
+class ContextValue(BaseModel):
+    key: str = Field(..., pattern=r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+    value: (int, float)
+
+
+# ── Endpoints ────────────────────────────────────────────────────────────────
 @app.get("/pipeline")
-def execute_pipeline(law: str = Query(None, description="Path to legal text file")):
-    return run_pipeline(law_path=law)
+def execute_pipeline(law: Optional[str] = Query(None, description="Path to legal text file (sanitized)")):
+    validated = PipelineRequest(law=law)
+    return run_pipeline(law_path=validated.law)
 
 
 @app.get("/report")
@@ -32,25 +69,22 @@ def get_report():
 
 @app.get("/contract")
 def get_contract():
-    report = run_pipeline()
-    return report["contract"]
+    return run_pipeline()["contract"]
 
 
 @app.get("/signatures")
 def get_signatures():
-    report = run_pipeline()
-    return report["signatures"]
+    return run_pipeline()["signatures"]
 
 
 @app.get("/agents")
 def get_agents():
-    report = run_pipeline()
-    return report["agents"]
+    return run_pipeline()["agents"]
 
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "LEXI AI Audit Pipeline v1.0.0"}
+    return {"status": "ok", "service": "LEXI AI Audit Pipeline v2.0.0", "version": "2.0.0"}
 
 
 def main():
